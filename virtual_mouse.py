@@ -5,7 +5,7 @@ import HandDetector
 import time
 
 cam_w, cam_h = 640, 480
-frameR = 100
+frameR = 140
 
 cap = cv2.VideoCapture(0)
 cap.set(3, cam_w)
@@ -14,6 +14,7 @@ pTime = 0
 plocX, plocY = 0, 0
 clocX, clocY = 0, 0
 smooth = 6
+lastClick = 0
 
 detector = HandDetector.HandDetector(maxHands=1)
 wScreen, hScreen = autopy.screen.size()
@@ -30,30 +31,48 @@ while True:
         x2, y2 = lmList[12][1:]
         # Check which fingers are up
         fingers = detector.fingerUp()
-        print(fingers)
-        # Only index finger: moving mode
-        if fingers[1] == 1 and fingers[0] == 0:
-            cv2.rectangle(img, (frameR, frameR), (cam_w - frameR, cam_h - frameR), (255, 0, 255), 2)
-            # Convert coordinates
-            x3 = np.interp(x1, (frameR, cam_w - frameR), (0, wScreen))
-            y3 = np.interp(y1, (frameR, cam_h - frameR), (0, hScreen))
-            # Smoothing values
-            clocX = plocX + (x3 - plocX) / smooth
-            clocY = plocY + (y3 - plocY) / smooth
+        # print(fingers)
+        clickLength, clickImg, clickInfo = detector.getDist(4, 8, img)
+        dragLength, dragImg, dragInfo = detector.getDist(8, 12, img, draw=False)
 
+        cv2.rectangle(img, (frameR, frameR), (cam_w - frameR, cam_h - frameR), (255, 0, 255), 2)
+        # Convert coordinates
+        x3 = np.interp(x1, (frameR, cam_w - frameR), (0, wScreen))
+        y3 = np.interp(y1, (frameR, cam_h - frameR), (0, hScreen))
+        # Smoothing values
+        clocX = plocX + (x3 - plocX) / smooth
+        clocY = plocY + (y3 - plocY) / smooth
+
+        # Move mode
+        if clickLength >= 50 and dragLength >= 50:
             # Move mouse
-            autopy.mouse.move(wScreen - clocX, clocY)
+            try:
+                autopy.mouse.move(wScreen - clocX, clocY)
+            except ValueError:
+                print("ValueError")
             cv2.circle(img, (x1, y1), 15, (255, 0, 255), cv2.FILLED)
             plocX, plocY = clocX, clocY
-        # Both index and thumb up: Click Mode
-        if fingers[1] == 1 and fingers[0] == 1:
+
+        # Click Mode (Go into lock position)
+        elif 50 > clickLength > 0:
             # Find distance between fingers (4 and 8 are the tips of the fingers)
-            length, img, lineInfo = detector.getDist(4, 8, img)
-            print(length)
+            # clickLength, img, clickInfo = detector.getDist(4, 8, img)
             # Click when dist of the two fingers are short.
-            if length < 95:
-                cv2.circle(img, (lineInfo[4], lineInfo[5]), 15, (0, 255, 0), cv2.FILLED)
-                #autopy.mouse.click()
+            if clickLength < 18:
+                curClick = time.time()
+                cv2.circle(img, (clickInfo[4], clickInfo[5]), 15, (0, 255, 0), cv2.FILLED)
+                if curClick > lastClick + 0.2:
+                    autopy.mouse.click()
+                    lastClick = curClick
+
+        # Drag Mode
+        elif(50 > dragLength > 0):
+            # Move mouse
+            try:
+                autopy.mouse.toggle(down=True)
+                autopy.mouse.move(wScreen - clocX, clocY)
+            except ValueError:
+                print("ValueError")
 
     # Frame rate
     cTime = time.time()

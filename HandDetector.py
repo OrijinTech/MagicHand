@@ -73,15 +73,6 @@ class HandDetector:
                 fingers.append(0)
         return fingers
 
-    def thumbIndexDiff(self):
-        fingers = []
-        # This checks for the thumb
-        if self.jointList[self.tipIds[0]][1] > self.jointList[self.tipIds[0] - 1][1]:
-            fingers.append(1)
-        else:
-            fingers.append(0)
-        return fingers
-
     def getDist(self, p1, p2, img, draw=True, r=15, t=3):
         x1, y1 = self.jointList[p1][1:]
         x2, y2 = self.jointList[p2][1:]
