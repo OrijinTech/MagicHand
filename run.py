@@ -1,6 +1,6 @@
 import cv2
 import time
-import hand_detector
+import HandDetector
 
 
 
@@ -8,16 +8,16 @@ def main():
     pTime = 0
     cTime = 0
     cap = cv2.VideoCapture(0)
-    detector = hand_detector.hand_detector()
+    detector = HandDetector.HandDetector()
 
     while True:
         sucsess, img = cap.read()
-        img = detector.find_hands(img)
+        img = detector.findHands(img)
         # Gives us the current time
         cTime = time.time()
         fps = 1 / (cTime - pTime)  # This is for calculating the FPS
         pTime = cTime
-        lm_list = detector.find_pos(img, draw=False)
+        lm_list = detector.findPos(img, draw=False)
         # print out specific landmark
         if len(lm_list) != 0:
             print(lm_list[0])
