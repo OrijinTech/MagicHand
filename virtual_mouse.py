@@ -1,4 +1,5 @@
 import autopy as autopy
+import mouse
 import cv2
 import numpy as np
 import HandDetector
@@ -34,7 +35,8 @@ while True:
         # print(fingers)
         clickLength, clickImg, clickInfo = detector.getDist(4, 8, img)
         dragLength, dragImg, dragInfo = detector.getDist(8, 12, img, draw=False)
-
+        rightCLength, rcImg, rcInfo = detector.getDist(4, 12, img)
+        print(rightCLength)
         cv2.rectangle(img, (frameR, frameR), (cam_w - frameR, cam_h - frameR), (255, 0, 255), 2)
         # Convert coordinates
         x3 = np.interp(x1, (frameR, cam_w - frameR), (0, wScreen))
@@ -66,13 +68,21 @@ while True:
                     lastClick = curClick
 
         # Drag Mode
-        elif(50 > dragLength > 0):
+        elif 50 > dragLength > 0:
             # Move mouse
             try:
                 autopy.mouse.toggle(down=True)
                 autopy.mouse.move(wScreen - clocX, clocY)
             except ValueError:
                 print("ValueError")
+
+        # Right Click
+        elif rightCLength < 20 and clickLength > 50:
+            if rightCLength < 15:
+                curClick = time.time()
+                if curClick > lastClick + 0.2:
+                    mouse.right_click()
+                    lastClick = curClick
 
     # Frame rate
     cTime = time.time()
