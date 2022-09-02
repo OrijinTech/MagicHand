@@ -1,5 +1,4 @@
 import autopy as autopy
-import mouse
 import cv2
 import numpy as np
 import HandDetector
@@ -77,12 +76,12 @@ while True:
                 print("ValueError")
 
         # Right Click
-        elif rightCLength < 20 and clickLength > 50:
-            if rightCLength < 15:
-                curClick = time.time()
-                if curClick > lastClick + 0.2:
-                    mouse.right_click()
-                    lastClick = curClick
+        # elif rightCLength < 20 and clickLength > 50:
+        #     if rightCLength < 15:
+        #         curClick = time.time()
+        #         if curClick > lastClick + 0.2:
+        #             mouse.right_click()
+        #             lastClick = curClick
 
     # Frame rate
     cTime = time.time()
